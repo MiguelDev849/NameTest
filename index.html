@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Nomes do IBGE</title>
+<title>Nomes IBGE</title>
 
 <style>
 
@@ -65,12 +65,7 @@ button{
     cursor:pointer;
 }
 
-button:hover{
-    opacity:0.8;
-}
-
 #resultado{
-
     margin-top:20px;
 
     background:#181818;
@@ -83,19 +78,13 @@ button:hover{
 }
 
 .nome{
-
     padding:10px;
-
     border-bottom:1px solid #333;
 }
 
 .info{
     color:#aaa;
     font-size:14px;
-}
-
-.erro{
-    color:red;
 }
 
 </style>
@@ -105,12 +94,12 @@ button:hover{
 
 <div class="box">
 
-    <h1>Nomes Populares do IBGE</h1>
+    <h1>Nomes Populares</h1>
 
     <input
         type="number"
         id="ano"
-        placeholder="Digite um ano (ex: 2007)"
+        placeholder="Digite um ano"
     >
 
     <button onclick="buscarNomes()">
@@ -119,7 +108,7 @@ button:hover{
 
     <div id="resultado">
 
-        Digite um ano para pesquisar.
+        Digite um ano.
 
     </div>
 
@@ -129,27 +118,21 @@ button:hover{
 
 async function buscarNomes(){
 
-    const ano =
-        Number(
-            document.getElementById("ano").value
-        );
+    const ano = Number(
+        document.getElementById("ano").value
+    );
 
     const resultado =
         document.getElementById("resultado");
 
-    // Verificação
     if(!ano){
 
         resultado.innerHTML =
-
-            `<div class="erro">
-                Digite um ano válido.
-            </div>`;
+            "Digite um ano válido.";
 
         return;
     }
 
-    // Descobrir década
     const decada =
         Math.floor(ano / 10) * 10;
 
@@ -157,40 +140,33 @@ async function buscarNomes(){
         decada + 10;
 
     resultado.innerHTML =
-        "Buscando nomes...";
+        "Buscando...";
 
     try{
 
-        // URL corrigida
-        const url =
+        // URL da API
+        const api =
 
 `https://servicodados.ibge.gov.br/api/v2/censos/nomes/ranking?decada=%5B${decada},${proxima}%5B`;
+
+        // Proxy CORS
+        const url =
+
+`https://api.allorigins.win/raw?url=${encodeURIComponent(api)}`;
 
         const resposta =
             await fetch(url);
 
-        if(!resposta.ok){
-
-            throw new Error(
-                "Erro na API do IBGE"
-            );
-        }
-
         const dados =
             await resposta.json();
 
-        // Verificar dados
         if(
-            !dados ||
             !dados[0] ||
             !dados[0].res
         ){
 
             resultado.innerHTML =
-
-                `<div class="erro">
-                    Nenhum resultado encontrado.
-                </div>`;
+                "Nenhum resultado encontrado.";
 
             return;
         }
@@ -201,17 +177,15 @@ async function buscarNomes(){
         let html = `
 
             <h2>
-                Nomes da década de ${decada}
+                Década de ${decada}
             </h2>
 
             <p>
-                Total de nomes encontrados:
-                <b>${nomes.length}</b>
+                ${nomes.length} nomes encontrados
             </p>
 
         `;
 
-        // Mostrar todos os nomes
         nomes.forEach((item, index) => {
 
             html += `
@@ -245,23 +219,10 @@ async function buscarNomes(){
 
         resultado.innerHTML =
 
-            `<div class="erro">
+            "Erro ao buscar nomes.";
 
-                Erro ao conectar com o IBGE.
-
-                <br><br>
-
-                Abra usando servidor local.
-
-                <br><br>
-
-                Exemplo:
-                <br>
-
-                http://localhost:8000
-
-            </div>`;
     }
+
 }
 
 </script>
