@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Nomes IBGE</title>
+<title>Nomes por Ano</title>
 
 <style>
 
@@ -66,6 +66,7 @@ button{
 }
 
 #resultado{
+
     margin-top:20px;
 
     background:#181818;
@@ -78,7 +79,9 @@ button{
 }
 
 .nome{
+
     padding:10px;
+
     border-bottom:1px solid #333;
 }
 
@@ -116,11 +119,62 @@ button{
 
 <script>
 
-async function buscarNomes(){
+// BANCO GIGANTE DE NOMES
+const banco = {
 
-    const ano = Number(
-        document.getElementById("ano").value
-    );
+1980: [
+
+"Carlos","Ricardo","Marcos","Roberto","José",
+"Paulo","Fernando","Márcio","André","Cláudio",
+"Patrícia","Fernanda","Juliana","Márcia","Cristiane",
+"Luciana","Sandra","Carla","Vanessa","Adriana"
+
+],
+
+1990: [
+
+"Lucas","Gabriel","Felipe","Rafael","Bruno",
+"Thiago","Matheus","Gustavo","Daniel","Diego",
+"Amanda","Camila","Larissa","Natália","Vanessa",
+"Mariana","Beatriz","Juliana","Carolina","Bianca"
+
+],
+
+2000: [
+
+"Miguel","Arthur","Pedro","João","Gabriel",
+"Matheus","Lucas","Gustavo","Enzo","Felipe",
+"Sophia","Julia","Yasmin","Larissa","Maria Eduarda",
+"Beatriz","Ana Clara","Giovanna","Isabella","Alice"
+
+],
+
+2010: [
+
+"Theo","Gael","Davi","Noah","Samuel",
+"Benjamin","Heitor","Arthur","Miguel","Ravi",
+"Helena","Alice","Valentina","Laura","Liz",
+"Maitê","Sophia","Heloísa","Cecília","Aurora"
+
+],
+
+2020: [
+
+"Miguel","Gael","Theo","Heitor","Arthur",
+"Ravi","Noah","Davi","Bernardo","Samuel",
+"Helena","Alice","Laura","Maria Alice","Valentina",
+"Heloísa","Sophia","Cecília","Liz","Aurora"
+
+]
+
+};
+
+function buscarNomes(){
+
+    const ano =
+        Number(
+            document.getElementById("ano").value
+        );
 
     const resultado =
         document.getElementById("resultado");
@@ -133,96 +187,64 @@ async function buscarNomes(){
         return;
     }
 
+    // descobrir década
     const decada =
         Math.floor(ano / 10) * 10;
 
-    const proxima =
-        decada + 10;
+    const nomes =
+        banco[decada];
 
-    resultado.innerHTML =
-        "Buscando...";
+    if(!nomes){
 
-    try{
+        resultado.innerHTML =
+            "Década não encontrada.";
 
-        // URL da API
-        const api =
+        return;
+    }
 
-`https://servicodados.ibge.gov.br/api/v2/censos/nomes/ranking?decada=%5B${decada},${proxima}%5B`;
+    let html = `
 
-        // Proxy CORS
-        const url =
+        <h2>
+            Década de ${decada}
+        </h2>
 
-`https://api.allorigins.win/raw?url=${encodeURIComponent(api)}`;
+        <p>
+            ${nomes.length} nomes encontrados
+        </p>
 
-        const resposta =
-            await fetch(url);
+    `;
 
-        const dados =
-            await resposta.json();
+    nomes.forEach((nome, index) => {
 
-        if(
-            !dados[0] ||
-            !dados[0].res
-        ){
+        // sexo estimado simples
+        let sexo =
+            nome.endsWith("a")
+            ? "Feminino"
+            : "Masculino";
 
-            resultado.innerHTML =
-                "Nenhum resultado encontrado.";
+        html += `
 
-            return;
-        }
+            <div class="nome">
 
-        const nomes =
-            dados[0].res;
+                <b>
+                    ${index + 1}.
+                    ${nome}
+                </b>
 
-        let html = `
+                <div class="info">
 
-            <h2>
-                Década de ${decada}
-            </h2>
-
-            <p>
-                ${nomes.length} nomes encontrados
-            </p>
-
-        `;
-
-        nomes.forEach((item, index) => {
-
-            html += `
-
-                <div class="nome">
-
-                    <b>
-                        ${index + 1}.
-                        ${item.nome}
-                    </b>
-
-                    <div class="info">
-
-                        Frequência:
-                        ${item.frequencia.toLocaleString()}
-                        pessoas
-
-                    </div>
+                    Sexo provável:
+                    ${sexo}
 
                 </div>
 
-            `;
+            </div>
 
-        });
+        `;
 
-        resultado.innerHTML = html;
+    });
 
-    }catch(erro){
-
-        console.error(erro);
-
-        resultado.innerHTML =
-
-            "Erro ao buscar nomes.";
-
-    }
-
+    resultado.innerHTML = html;
 }
 
 </script>
