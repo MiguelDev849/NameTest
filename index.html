@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Nomes do IBGE</title>
+
+<style>
+
+body{
+    margin:0;
+    background:#111;
+    color:white;
+    font-family:Arial;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    min-height:100vh;
+}
+
+.box{
+    width:700px;
+
+    background:#1f1f1f;
+
+    padding:25px;
+    border-radius:20px;
+
+    box-shadow:0 0 20px rgba(0,0,0,0.5);
+}
+
+h1{
+    text-align:center;
+}
+
+input{
+    width:100%;
+    padding:12px;
+
+    border:none;
+    border-radius:10px;
+
+    font-size:16px;
+
+    box-sizing:border-box;
+}
+
+button{
+    width:100%;
+
+    margin-top:10px;
+    padding:12px;
+
+    border:none;
+    border-radius:10px;
+
+    background:#00aaff;
+    color:white;
+
+    font-size:16px;
+    cursor:pointer;
+}
+
+button:hover{
+    opacity:0.8;
+}
+
+#resultado{
+
+    margin-top:20px;
+
+    background:#181818;
+
+    border-radius:10px;
+    padding:15px;
+
+    max-height:500px;
+    overflow-y:auto;
+}
+
+.nome{
+
+    padding:10px;
+
+    border-bottom:1px solid #333;
+}
+
+.info{
+    color:#aaa;
+    font-size:14px;
+}
+
+.erro{
+    color:red;
+}
+
+</style>
+
+</head>
+<body>
+
+<div class="box">
+
+    <h1>Nomes Populares do IBGE</h1>
+
+    <input
+        type="number"
+        id="ano"
+        placeholder="Digite um ano (ex: 2007)"
+    >
+
+    <button onclick="buscarNomes()">
+        Buscar nomes
+    </button>
+
+    <div id="resultado">
+
+        Digite um ano para pesquisar.
+
+    </div>
+
+</div>
+
+<script>
+
+async function buscarNomes(){
+
+    const ano =
+        Number(
+            document.getElementById("ano").value
+        );
+
+    const resultado =
+        document.getElementById("resultado");
+
+    // Verificação
+    if(!ano){
+
+        resultado.innerHTML =
+
+            `<div class="erro">
+                Digite um ano válido.
+            </div>`;
+
+        return;
+    }
+
+    // Descobrir década
+    const decada =
+        Math.floor(ano / 10) * 10;
+
+    const proxima =
+        decada + 10;
+
+    resultado.innerHTML =
+        "Buscando nomes...";
+
+    try{
+
+        // URL corrigida
+        const url =
+
+`https://servicodados.ibge.gov.br/api/v2/censos/nomes/ranking?decada=%5B${decada},${proxima}%5B`;
+
+        const resposta =
+            await fetch(url);
+
+        if(!resposta.ok){
+
+            throw new Error(
+                "Erro na API do IBGE"
+            );
+        }
+
+        const dados =
+            await resposta.json();
+
+        // Verificar dados
+        if(
+            !dados ||
+            !dados[0] ||
+            !dados[0].res
+        ){
+
+            resultado.innerHTML =
+
+                `<div class="erro">
+                    Nenhum resultado encontrado.
+                </div>`;
+
+            return;
+        }
+
+        const nomes =
+            dados[0].res;
+
+        let html = `
+
+            <h2>
+                Nomes da década de ${decada}
+            </h2>
+
+            <p>
+                Total de nomes encontrados:
+                <b>${nomes.length}</b>
+            </p>
+
+        `;
+
+        // Mostrar todos os nomes
+        nomes.forEach((item, index) => {
+
+            html += `
+
+                <div class="nome">
+
+                    <b>
+                        ${index + 1}.
+                        ${item.nome}
+                    </b>
+
+                    <div class="info">
+
+                        Frequência:
+                        ${item.frequencia.toLocaleString()}
+                        pessoas
+
+                    </div>
+
+                </div>
+
+            `;
+
+        });
+
+        resultado.innerHTML = html;
+
+    }catch(erro){
+
+        console.error(erro);
+
+        resultado.innerHTML =
+
+            `<div class="erro">
+
+                Erro ao conectar com o IBGE.
+
+                <br><br>
+
+                Abra usando servidor local.
+
+                <br><br>
+
+                Exemplo:
+                <br>
+
+                http://localhost:8000
+
+            </div>`;
+    }
+}
+
+</script>
+
+</body>
+</html>
