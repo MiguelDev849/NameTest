@@ -5,11 +5,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>IBGE Nomes</title>
+<title>Super Banco de Nomes</title>
 
 <style>
 
 body{
+    margin:0;
     background:#111;
     color:white;
     font-family:Arial;
@@ -19,11 +20,11 @@ body{
     align-items:center;
 
     min-height:100vh;
-    margin:0;
 }
 
 .box{
-    width:700px;
+
+    width:900px;
 
     background:#1f1f1f;
 
@@ -32,6 +33,7 @@ body{
 }
 
 input{
+
     width:100%;
     padding:12px;
 
@@ -42,9 +44,10 @@ input{
 }
 
 button{
-    width:100%;
 
+    width:100%;
     margin-top:10px;
+
     padding:12px;
 
     border:none;
@@ -57,6 +60,7 @@ button{
 }
 
 #resultado{
+
     margin-top:20px;
 
     background:#181818;
@@ -65,13 +69,19 @@ button{
 
     padding:15px;
 
-    max-height:500px;
+    max-height:600px;
     overflow-y:auto;
 }
 
 .nome{
+
     padding:10px;
+
     border-bottom:1px solid #333;
+}
+
+.info{
+    color:#aaa;
 }
 
 </style>
@@ -81,7 +91,7 @@ button{
 
 <div class="box">
 
-    <h1>Nomes do IBGE</h1>
+    <h1>Super Banco de Nomes</h1>
 
     <input
         type="number"
@@ -90,7 +100,7 @@ button{
     >
 
     <button onclick="buscar()">
-        Buscar
+        Buscar nomes
     </button>
 
     <div id="resultado">
@@ -102,6 +112,45 @@ button{
 </div>
 
 <script>
+
+// BANCO EXTRA GIGANTE
+const nomesExtras = [
+
+"Abel","Abigail","Abraão","Ada","Adalberto",
+"Adalgisa","Adão","Adelaide","Ademar","Adriana",
+"Agnaldo","Aída","Alan","Alana","Alberto",
+"Albina","Alcides","Alda","Aldair","Aldaíra",
+"Alejandro","Alessandra","Alex","Alexa","Alexandre",
+"Alexia","Alice","Aline","Almir","Aloísio",
+"Altair","Alzira","Amanda","Amélia","Ana",
+"Anselmo","Antônio","Aparecida","Arlete","Armando",
+"Arthur","Aurora","Bárbara","Beatriz","Benedito",
+"Bianca","Brenda","Bruno","Caio","Camila",
+"Carlos","Carolina","Cássia","Cecília","César",
+"Cláudia","Cláudio","Cristiane","Cristiano","Daniel",
+"Daniela","Davi","Denise","Diego","Douglas",
+"Eduarda","Eduardo","Elaine","Eliana","Emanuel",
+"Enzo","Erick","Esther","Evelyn","Fabiana",
+"Felipe","Fernanda","Fernando","Francisco","Gabriel",
+"Gabriela","Giovana","Gisele","Gustavo","Helena",
+"Henrique","Hugo","Igor","Ingrid","Isabela",
+"Isadora","Jéssica","João","Joaquim","Jonas",
+"Jorge","José","Josefa","Joyce","Juan",
+"Júlia","Juliana","Kaique","Karen","Kauã",
+"Kelly","Kevin","Lara","Larissa","Laura",
+"Leonardo","Letícia","Lívia","Lorena","Lucas",
+"Luciana","Luiz","Luna","Marcelo","Márcia",
+"Marcos","Maria","Mariana","Matheus","Melissa",
+"Miguel","Milena","Natália","Nicole","Nicolas",
+"Noah","Olívia","Otávio","Patrícia","Paulo",
+"Pedro","Priscila","Rafael","Raquel","Rebecca",
+"Renata","Renato","Ricardo","Roberto","Rodrigo",
+"Sabrina","Samuel","Sandra","Sara","Sophia",
+"Stefany","Tainá","Talita","Theo","Thiago",
+"Valentina","Vanessa","Vicente","Vinicius","Vitória",
+"Wagner","Wallace","Wellington","William","Yasmin"
+
+];
 
 async function buscar(){
 
@@ -125,11 +174,11 @@ async function buscar(){
         Math.floor(ano / 10) * 10;
 
     resultado.innerHTML =
-        "Buscando...";
+        "Buscando nomes...";
 
     try{
 
-        // URL FUNCIONAL
+        // API DO IBGE
         const url =
 
 `https://servicodados.ibge.gov.br/api/v2/censos/nomes/ranking?decada=${decada}`;
@@ -140,17 +189,35 @@ async function buscar(){
         const dados =
             await resposta.json();
 
+        let nomesIBGE = [];
+
+        // pegar nomes da API
         if(
-            !dados ||
-            !dados[0] ||
-            !dados[0].res
+            dados &&
+            dados[0] &&
+            dados[0].res
         ){
 
-            resultado.innerHTML =
-                "Nenhum resultado.";
-
-            return;
+            nomesIBGE =
+                dados[0].res.map(
+                    x => x.nome
+                );
         }
+
+        // juntar listas
+        const nomesFinal = [
+
+            ...nomesIBGE,
+            ...nomesExtras
+
+        ];
+
+        // remover repetidos
+        const semDuplicados = [
+
+            ...new Set(nomesFinal)
+
+        ];
 
         let html = `
 
@@ -158,21 +225,35 @@ async function buscar(){
                 Década de ${decada}
             </h2>
 
+            <p>
+                ${semDuplicados.length}
+                nomes encontrados
+            </p>
+
         `;
 
-        dados[0].res.forEach((item, index) => {
+        semDuplicados.forEach((nome, index) => {
+
+            let sexo =
+                nome.endsWith("a")
+                ? "Feminino"
+                : "Masculino";
 
             html += `
 
                 <div class="nome">
 
-                    ${index + 1}.
-                    ${item.nome}
+                    <b>
+                        ${index + 1}.
+                        ${nome}
+                    </b>
 
-                    <br>
+                    <div class="info">
 
-                    Frequência:
-                    ${item.frequencia.toLocaleString()}
+                        Sexo provável:
+                        ${sexo}
+
+                    </div>
 
                 </div>
 
@@ -186,8 +267,50 @@ async function buscar(){
 
         console.error(erro);
 
-        resultado.innerHTML =
-            "Erro ao buscar dados.";
+        // fallback sem API
+        let html = `
+
+            <h2>
+                Banco local
+            </h2>
+
+            <p>
+                ${nomesExtras.length}
+                nomes encontrados
+            </p>
+
+        `;
+
+        nomesExtras.forEach((nome, index) => {
+
+            let sexo =
+                nome.endsWith("a")
+                ? "Feminino"
+                : "Masculino";
+
+            html += `
+
+                <div class="nome">
+
+                    <b>
+                        ${index + 1}.
+                        ${nome}
+                    </b>
+
+                    <div class="info">
+
+                        Sexo provável:
+                        ${sexo}
+
+                    </div>
+
+                </div>
+
+            `;
+
+        });
+
+        resultado.innerHTML = html;
     }
 }
 
