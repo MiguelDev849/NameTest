@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Nomes por Ano</title>
+<title>Nomes do IBGE</title>
 
 <style>
 
@@ -79,9 +79,7 @@ button{
 }
 
 .nome{
-
     padding:10px;
-
     border-bottom:1px solid #333;
 }
 
@@ -97,7 +95,7 @@ button{
 
 <div class="box">
 
-    <h1>Nomes Populares</h1>
+    <h1>Nomes do IBGE</h1>
 
     <input
         type="number"
@@ -119,79 +117,7 @@ button{
 
 <script>
 
-// BANCO GIGANTE DE NOMES
-const banco = {
-
-1980: [
-
-"Carlos","Ricardo","Marcos","Roberto","José",
-"Paulo","Fernando","Márcio","André","Cláudio",
-"Patrícia","Fernanda","Juliana","Márcia","Cristiane",
-"Luciana","Sandra","Carla","Vanessa","Adriana"
-
-],
-
-1990: [
-
-"Lucas","Gabriel","Felipe","Rafael","Bruno",
-"Thiago","Matheus","Gustavo","Daniel","Diego",
-"Amanda","Camila","Larissa","Natália","Vanessa",
-"Mariana","Beatriz","Juliana","Carolina","Bianca"
-
-],
-
-1985: [
-
-"Carlos","Ricardo","Marcos","Roberto","José",
-"Paulo","Fernando","Márcio","André","Cláudio",
-"Eduardo","Rodrigo","Fábio","Alexandre","Marcelo",
-"Leonardo","Renato","Gustavo","Vinícius","Rogério",
-"Márcio","Sérgio","Gilberto","Maurício","Cristiano",
-"Fabiano","Leandro","Robson","César","Ronaldo",
-"Patrícia","Fernanda","Juliana","Márcia","Cristiane",
-"Luciana","Sandra","Carla","Vanessa","Adriana",
-"Simone","Rosângela","Tatiane","Daniela","Aline",
-"Camila","Bianca","Viviane","Tatiana","Renata",
-"Paula","Priscila","Elaine","Mônica","Silvana",
-"Jaqueline","Débora","Flávia","Denise","Cíntia",
-"Rosana","Sueli","Regina","Michele","Verônica",
-"Patrícia","Kelly","Andreia","Cristina","Eliane",
-"Raquel","Tânia","Fabiana","Lilian","Silmara",
-"Ângela","Solange","Caroline","Bruna","Carolina"
-
-],
-    
-
-2000: [
-
-"Miguel","Arthur","Pedro","João","Gabriel",
-"Matheus","Lucas","Gustavo","Enzo","Felipe",
-"Sophia","Julia","Yasmin","Larissa","Maria Eduarda",
-"Beatriz","Ana Clara","Giovanna","Isabella","Alice"
-
-],
-
-2010: [
-
-"Theo","Gael","Davi","Noah","Samuel",
-"Benjamin","Heitor","Arthur","Miguel","Ravi",
-"Helena","Alice","Valentina","Laura","Liz",
-"Maitê","Sophia","Heloísa","Cecília","Aurora"
-
-],
-
-2020: [
-
-"Miguel","Gael","Theo","Heitor","Arthur",
-"Ravi","Noah","Davi","Bernardo","Samuel",
-"Helena","Alice","Laura","Maria Alice","Valentina",
-"Heloísa","Sophia","Cecília","Liz","Aurora"
-
-]
-
-};
-
-function buscarNomes(){
+async function buscarNomes(){
 
     const ano =
         Number(
@@ -209,64 +135,125 @@ function buscarNomes(){
         return;
     }
 
-    // descobrir década
     const decada =
         Math.floor(ano / 10) * 10;
 
-    const nomes =
-        banco[decada];
+    const proxima =
+        decada + 10;
 
-    if(!nomes){
+    resultado.innerHTML =
+        "Buscando nomes...";
 
-        resultado.innerHTML =
-            "Década não encontrada.";
+    try{
 
-        return;
-    }
+        // API do IBGE
+        const url =
 
-    let html = `
+`https://servicodados.ibge.gov.br/api/v2/censos/nomes/ranking?decada=[${decada},${proxima}[`;
 
-        <h2>
-            Década de ${decada}
-        </h2>
+        const resposta =
+            await fetch(url);
 
-        <p>
-            ${nomes.length} nomes encontrados
-        </p>
+        if(!resposta.ok){
 
-    `;
+            throw new Error(
+                "Erro na API"
+            );
+        }
 
-    nomes.forEach((nome, index) => {
+        const dados =
+            await resposta.json();
 
-        // sexo estimado simples
-        let sexo =
-            nome.endsWith("a")
-            ? "Feminino"
-            : "Masculino";
+        if(
+            !dados ||
+            !dados[0] ||
+            !dados[0].res
+        ){
 
-        html += `
+            resultado.innerHTML =
+                "Nenhum nome encontrado.";
 
-            <div class="nome">
+            return;
+        }
 
-                <b>
-                    ${index + 1}.
-                    ${nome}
-                </b>
+        const nomes =
+            dados[0].res;
 
-                <div class="info">
+        let html = `
 
-                    Sexo provável:
-                    ${sexo}
+            <h2>
+                Década de ${decada}
+            </h2>
 
-                </div>
-
-            </div>
+            <p>
+                ${nomes.length} nomes encontrados
+            </p>
 
         `;
 
-    });
+        nomes.forEach((item, index) => {
 
-    resultado.innerHTML = html;
+            let sexo = "Desconhecido";
+
+            // tentativa simples
+            if(
+                item.nome.endsWith("A")
+            ){
+
+                sexo = "Feminino";
+
+            }else{
+
+                sexo = "Masculino";
+            }
+
+            html += `
+
+                <div class="nome">
+
+                    <b>
+                        ${index + 1}.
+                        ${item.nome}
+                    </b>
+
+                    <div class="info">
+
+                        Frequência:
+                        ${item.frequencia.toLocaleString()}
+                        pessoas
+
+                        <br>
+
+                        Sexo provável:
+                        ${sexo}
+
+                    </div>
+
+                </div>
+
+            `;
+
+        });
+
+        resultado.innerHTML = html;
+
+    }catch(erro){
+
+        console.error(erro);
+
+        resultado.innerHTML =
+
+            `
+            Erro ao buscar nomes.
+
+            <br><br>
+
+            Se estiver usando GitHub Pages
+            e der CORS,
+            use Netlify ou Vercel.
+            `;
+    }
+
 }
 
 </script>
