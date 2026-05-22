@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Nomes do IBGE</title>
+<title>Tabela Completa IBGE</title>
 
 <style>
 
@@ -23,7 +23,8 @@ body{
 }
 
 .box{
-    width:700px;
+    width:900px;
+
     background:#1f1f1f;
 
     padding:25px;
@@ -31,6 +32,7 @@ body{
 }
 
 input{
+
     width:100%;
     padding:12px;
 
@@ -41,9 +43,10 @@ input{
 }
 
 button{
-    width:100%;
 
+    width:100%;
     margin-top:10px;
+
     padding:12px;
 
     border:none;
@@ -65,17 +68,25 @@ button{
 
     padding:15px;
 
-    max-height:500px;
+    max-height:600px;
     overflow-y:auto;
 }
 
-.nome{
-    padding:10px;
-    border-bottom:1px solid #333;
+table{
+    width:100%;
+    border-collapse:collapse;
 }
 
-.info{
-    color:#aaa;
+th, td{
+    border-bottom:1px solid #333;
+    padding:10px;
+    text-align:left;
+}
+
+th{
+    position:sticky;
+    top:0;
+    background:#222;
 }
 
 </style>
@@ -85,7 +96,7 @@ button{
 
 <div class="box">
 
-    <h1>Nomes do IBGE</h1>
+    <h1>Tabela Completa do IBGE</h1>
 
     <input
         type="number"
@@ -94,7 +105,7 @@ button{
     >
 
     <button onclick="buscarNomes()">
-        Buscar
+        Buscar nomes
     </button>
 
     <div id="resultado">
@@ -125,19 +136,19 @@ async function buscarNomes(){
         return;
     }
 
-    // transformar em década
+    // descobrir década
     const decada =
         Math.floor(ano / 10) * 10;
 
     resultado.innerHTML =
-        "Buscando...";
+        "Buscando tabela completa...";
 
     try{
 
-        // URL CORRETA
+        // API MAIS COMPLETA
         const url =
 
-`https://servicodados.ibge.gov.br/api/v2/censos/nomes/ranking?decada=${decada}`;
+`https://servicodados.ibge.gov.br/api/v1/censos/nomes/ranking?qtd=1000&decada=${decada}`;
 
         const resposta =
             await fetch(url);
@@ -177,32 +188,43 @@ async function buscarNomes(){
                 ${nomes.length} nomes encontrados
             </p>
 
+            <table>
+
+                <tr>
+
+                    <th>#</th>
+                    <th>Nome</th>
+                    <th>Frequência</th>
+
+                </tr>
+
         `;
 
         nomes.forEach((item, index) => {
 
             html += `
 
-                <div class="nome">
+                <tr>
 
-                    <b>
-                        ${index + 1}.
+                    <td>
+                        ${index + 1}
+                    </td>
+
+                    <td>
                         ${item.nome}
-                    </b>
+                    </td>
 
-                    <div class="info">
-
-                        Frequência:
+                    <td>
                         ${item.frequencia.toLocaleString()}
-                        pessoas
+                    </td>
 
-                    </div>
-
-                </div>
+                </tr>
 
             `;
 
         });
+
+        html += "</table>";
 
         resultado.innerHTML = html;
 
@@ -211,7 +233,8 @@ async function buscarNomes(){
         console.error(erro);
 
         resultado.innerHTML =
-            "Erro ao buscar nomes.";
+
+            "Erro ao buscar tabela.";
 
     }
 
