@@ -5,12 +5,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Tabela Completa IBGE</title>
+<title>IBGE Nomes</title>
 
 <style>
 
 body{
-    margin:0;
     background:#111;
     color:white;
     font-family:Arial;
@@ -20,10 +19,11 @@ body{
     align-items:center;
 
     min-height:100vh;
+    margin:0;
 }
 
 .box{
-    width:900px;
+    width:700px;
 
     background:#1f1f1f;
 
@@ -32,7 +32,6 @@ body{
 }
 
 input{
-
     width:100%;
     padding:12px;
 
@@ -43,10 +42,9 @@ input{
 }
 
 button{
-
     width:100%;
-    margin-top:10px;
 
+    margin-top:10px;
     padding:12px;
 
     border:none;
@@ -59,7 +57,6 @@ button{
 }
 
 #resultado{
-
     margin-top:20px;
 
     background:#181818;
@@ -68,25 +65,13 @@ button{
 
     padding:15px;
 
-    max-height:600px;
+    max-height:500px;
     overflow-y:auto;
 }
 
-table{
-    width:100%;
-    border-collapse:collapse;
-}
-
-th, td{
-    border-bottom:1px solid #333;
+.nome{
     padding:10px;
-    text-align:left;
-}
-
-th{
-    position:sticky;
-    top:0;
-    background:#222;
+    border-bottom:1px solid #333;
 }
 
 </style>
@@ -96,7 +81,7 @@ th{
 
 <div class="box">
 
-    <h1>Tabela Completa do IBGE</h1>
+    <h1>Nomes do IBGE</h1>
 
     <input
         type="number"
@@ -104,8 +89,8 @@ th{
         placeholder="Digite um ano"
     >
 
-    <button onclick="buscarNomes()">
-        Buscar nomes
+    <button onclick="buscar()">
+        Buscar
     </button>
 
     <div id="resultado">
@@ -118,7 +103,7 @@ th{
 
 <script>
 
-async function buscarNomes(){
+async function buscar(){
 
     const ano =
         Number(
@@ -136,29 +121,21 @@ async function buscarNomes(){
         return;
     }
 
-    // descobrir década
     const decada =
         Math.floor(ano / 10) * 10;
 
     resultado.innerHTML =
-        "Buscando tabela completa...";
+        "Buscando...";
 
     try{
 
-        // API MAIS COMPLETA
+        // URL FUNCIONAL
         const url =
 
-`https://servicodados.ibge.gov.br/api/v1/censos/nomes/ranking?qtd=25&decada=${decada}`;
+`https://servicodados.ibge.gov.br/api/v2/censos/nomes/ranking?decada=${decada}`;
 
         const resposta =
             await fetch(url);
-
-        if(!resposta.ok){
-
-            throw new Error(
-                "Erro na API"
-            );
-        }
 
         const dados =
             await resposta.json();
@@ -175,56 +152,33 @@ async function buscarNomes(){
             return;
         }
 
-        const nomes =
-            dados[0].res;
-
         let html = `
 
             <h2>
                 Década de ${decada}
             </h2>
 
-            <p>
-                ${nomes.length} nomes encontrados
-            </p>
-
-            <table>
-
-                <tr>
-
-                    <th>#</th>
-                    <th>Nome</th>
-                    <th>Frequência</th>
-
-                </tr>
-
         `;
 
-        nomes.forEach((item, index) => {
+        dados[0].res.forEach((item, index) => {
 
             html += `
 
-                <tr>
+                <div class="nome">
 
-                    <td>
-                        ${index + 1}
-                    </td>
+                    ${index + 1}.
+                    ${item.nome}
 
-                    <td>
-                        ${item.nome}
-                    </td>
+                    <br>
 
-                    <td>
-                        ${item.frequencia.toLocaleString()}
-                    </td>
+                    Frequência:
+                    ${item.frequencia.toLocaleString()}
 
-                </tr>
+                </div>
 
             `;
 
         });
-
-        html += "</table>";
 
         resultado.innerHTML = html;
 
@@ -233,11 +187,8 @@ async function buscarNomes(){
         console.error(erro);
 
         resultado.innerHTML =
-
-            "Erro ao buscar tabela.";
-
+            "Erro ao buscar dados.";
     }
-
 }
 
 </script>
