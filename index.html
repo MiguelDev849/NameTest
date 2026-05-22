@@ -24,7 +24,6 @@ body{
 
 .box{
     width:700px;
-
     background:#1f1f1f;
 
     padding:25px;
@@ -126,21 +125,19 @@ async function buscarNomes(){
         return;
     }
 
+    // transformar em década
     const decada =
         Math.floor(ano / 10) * 10;
-
-    const proxima =
-        decada + 10;
 
     resultado.innerHTML =
         "Buscando...";
 
     try{
 
-        // URL CORRIGIDA
+        // URL CORRETA
         const url =
 
-`https://servicodados.ibge.gov.br/api/v2/censos/nomes/ranking?decada=%5B${decada},${proxima}%5B`;
+`https://servicodados.ibge.gov.br/api/v2/censos/nomes/ranking?decada=${decada}`;
 
         const resposta =
             await fetch(url);
@@ -156,6 +153,7 @@ async function buscarNomes(){
             await resposta.json();
 
         if(
+            !dados ||
             !dados[0] ||
             !dados[0].res
         ){
@@ -213,7 +211,6 @@ async function buscarNomes(){
         console.error(erro);
 
         resultado.innerHTML =
-
             "Erro ao buscar nomes.";
 
     }
