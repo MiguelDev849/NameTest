@@ -29,12 +29,6 @@ body{
 
     padding:25px;
     border-radius:20px;
-
-    box-shadow:0 0 20px rgba(0,0,0,0.5);
-}
-
-h1{
-    text-align:center;
 }
 
 input{
@@ -43,8 +37,6 @@ input{
 
     border:none;
     border-radius:10px;
-
-    font-size:16px;
 
     box-sizing:border-box;
 }
@@ -61,7 +53,6 @@ button{
     background:#00aaff;
     color:white;
 
-    font-size:16px;
     cursor:pointer;
 }
 
@@ -72,6 +63,7 @@ button{
     background:#181818;
 
     border-radius:10px;
+
     padding:15px;
 
     max-height:500px;
@@ -85,7 +77,6 @@ button{
 
 .info{
     color:#aaa;
-    font-size:14px;
 }
 
 </style>
@@ -104,7 +95,7 @@ button{
     >
 
     <button onclick="buscarNomes()">
-        Buscar nomes
+        Buscar
     </button>
 
     <div id="resultado">
@@ -142,14 +133,14 @@ async function buscarNomes(){
         decada + 10;
 
     resultado.innerHTML =
-        "Buscando nomes...";
+        "Buscando...";
 
     try{
 
-        // API do IBGE
+        // URL CORRIGIDA
         const url =
 
-`https://servicodados.ibge.gov.br/api/v2/censos/nomes/ranking?decada=[${decada},${proxima}[`;
+`https://servicodados.ibge.gov.br/api/v2/censos/nomes/ranking?decada=%5B${decada},${proxima}%5B`;
 
         const resposta =
             await fetch(url);
@@ -165,13 +156,12 @@ async function buscarNomes(){
             await resposta.json();
 
         if(
-            !dados ||
             !dados[0] ||
             !dados[0].res
         ){
 
             resultado.innerHTML =
-                "Nenhum nome encontrado.";
+                "Nenhum resultado.";
 
             return;
         }
@@ -193,20 +183,6 @@ async function buscarNomes(){
 
         nomes.forEach((item, index) => {
 
-            let sexo = "Desconhecido";
-
-            // tentativa simples
-            if(
-                item.nome.endsWith("A")
-            ){
-
-                sexo = "Feminino";
-
-            }else{
-
-                sexo = "Masculino";
-            }
-
             html += `
 
                 <div class="nome">
@@ -221,11 +197,6 @@ async function buscarNomes(){
                         Frequência:
                         ${item.frequencia.toLocaleString()}
                         pessoas
-
-                        <br>
-
-                        Sexo provável:
-                        ${sexo}
 
                     </div>
 
@@ -243,15 +214,8 @@ async function buscarNomes(){
 
         resultado.innerHTML =
 
-            `
-            Erro ao buscar nomes.
+            "Erro ao buscar nomes.";
 
-            <br><br>
-
-            Se estiver usando GitHub Pages
-            e der CORS,
-            use Netlify ou Vercel.
-            `;
     }
 
 }
